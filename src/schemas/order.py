@@ -2,7 +2,9 @@ from datetime import datetime
 from decimal import Decimal
 from enum import Enum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+from src.services.pricing import SUPPORTED_EXTRAS
 
 
 class OrderStatus(str, Enum):
@@ -15,6 +17,19 @@ class OrderItemCreate(BaseModel):
     menu_item_id: int
     quantity: int = Field(ge=1, le=20)
     extras: list[str] = Field(default_factory=list)
+
+    @field_validator("extras")
+    @classmethod
+    def validate_extras(cls, extras: list[str]) -> list[str]:
+        normalized_extras = [extra.strip().lower() for extra in extras]
+        invalid_extras = [extra for extra in normalized_extras if extra not in SUPPORTED_EXTRAS]
+        if invalid_extras:
+            supported_extras = ", ".join(sorted(SUPPORTED_EXTRAS))
+            invalid_list = ", ".join(invalid_extras)
+            raise ValueError(
+                f"Unsupported extras: {invalid_list}. Supported extras: {supported_extras}"
+            )
+        return normalized_extras
 
 
 class OrderCreateRequest(BaseModel):

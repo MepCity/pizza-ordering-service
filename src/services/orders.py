@@ -3,8 +3,10 @@ from decimal import Decimal
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
+from src.integrations.order_archive import archive_order_summary
 from src.models import MenuItem, Order, OrderItem
-from src.schemas.order import CouponApplyRequest, OrderCreateRequest
+from src.schemas.config import get_settings
+from src.schemas.order import CouponApplyRequest, OrderCreateRequest, OrderStatus
 from src.services.pricing import calculate_discount, calculate_line_total
 
 VALID_STATUS_TRANSITIONS = {
@@ -13,6 +15,13 @@ VALID_STATUS_TRANSITIONS = {
     "ready": {"delivered"},
     "delivered": set(),
 }
+
+
+def archive_order_if_enabled(order: Order) -> None:
+    settings = get_settings()
+    if not settings.s3_archive_enabled:
+        return
+    archive_order_summary(order)
 
 
 def list_menu_items(db: Session) -> list[MenuItem]:
@@ -84,12 +93,16 @@ def create_order(db: Session, payload: OrderCreateRequest) -> Order:
     db.add(order)
     db.commit()
     db.refresh(order)
-    return get_order_by_id(db, order.id)
+    persisted_order = get_order_by_id(db, order.id)
+    archive_order_if_enabled(persisted_order)
+    return persisted_order
 
 
-def update_order_status(db: Session, order_id: int, new_status: str) -> Order:
+def update_order_status(db: Session, order_id: int, new_status: OrderStatus | str) -> Order:
     order = get_order_by_id(db, order_id)
-    normalized_status = str(new_status).lower()
+    normalized_status = (
+        new_status.value if isinstance(new_status, OrderStatus) else new_status.lower()
+    )
 
     allowed_transitions = VALID_STATUS_TRANSITIONS.get(order.status, set())
     if normalized_status not in allowed_transitions:

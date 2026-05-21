@@ -1,6 +1,13 @@
 from decimal import Decimal
 
 EXTRA_PRICE = Decimal("2.50")
+SUPPORTED_EXTRAS = {
+    "extra_cheese",
+    "jalapeno",
+    "mushroom",
+    "olive",
+    "pepperoni",
+}
 SUPPORTED_COUPONS = {
     "PIZZA10": Decimal("0.10"),
     "CHEESE20": Decimal("0.20"),

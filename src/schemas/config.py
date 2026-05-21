@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "Pizza Ordering Service"
     app_version: str = "0.1.0"
     database_url: str = "sqlite:///./pizza.db"
+    s3_archive_enabled: bool = False
     s3_bucket_name: str = "pizza-orders"
     aws_region: str = "us-east-1"
     aws_access_key_id: str = "test"
