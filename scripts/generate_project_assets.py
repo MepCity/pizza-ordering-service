@@ -9,11 +9,15 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Image as RLImage
 from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
+UNICODE_FONT_NAME = "ArialUnicode"
+UNICODE_BOLD_FONT_NAME = "ArialBold"
 
 
 def get_font(size: int, bold: bool = False):
@@ -31,6 +35,22 @@ def get_font(size: int, bold: bool = False):
         if path.exists():
             return ImageFont.truetype(str(path), size=size)
     return ImageFont.load_default()
+
+
+def register_pdf_fonts() -> None:
+    regular_path = Path(
+        "/Users/yasir.arslan/.cache/codex-runtimes/codex-primary-runtime/"
+        "dependencies/python/lib/python3.12/site-packages/reportlab/fonts/Vera.ttf"
+    )
+    bold_path = Path(
+        "/Users/yasir.arslan/.cache/codex-runtimes/codex-primary-runtime/"
+        "dependencies/python/lib/python3.12/site-packages/reportlab/fonts/VeraBd.ttf"
+    )
+
+    if regular_path.exists() and UNICODE_FONT_NAME not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont(UNICODE_FONT_NAME, str(regular_path)))
+    if bold_path.exists() and UNICODE_BOLD_FONT_NAME not in pdfmetrics.getRegisteredFontNames():
+        pdfmetrics.registerFont(TTFont(UNICODE_BOLD_FONT_NAME, str(bold_path)))
 
 
 def draw_box(draw: ImageDraw.ImageDraw, xy, text: str, fill: str, outline: str = "#1f2937"):
@@ -101,12 +121,13 @@ def generate_architecture_png() -> None:
 
 
 def report_styles():
+    register_pdf_fonts()
     styles = getSampleStyleSheet()
     styles.add(
         ParagraphStyle(
             name="ReportTitle",
             parent=styles["Title"],
-            fontName="Helvetica-Bold",
+            fontName=UNICODE_BOLD_FONT_NAME,
             fontSize=22,
             leading=28,
             textColor=colors.HexColor("#111827"),
@@ -117,7 +138,7 @@ def report_styles():
         ParagraphStyle(
             name="ReportHeading",
             parent=styles["Heading2"],
-            fontName="Helvetica-Bold",
+            fontName=UNICODE_BOLD_FONT_NAME,
             fontSize=14,
             leading=18,
             textColor=colors.HexColor("#0f172a"),
@@ -125,7 +146,7 @@ def report_styles():
             spaceAfter=6,
         )
     )
-    styles["BodyText"].fontName = "Helvetica"
+    styles["BodyText"].fontName = UNICODE_FONT_NAME
     styles["BodyText"].fontSize = 10.5
     styles["BodyText"].leading = 15
     return styles

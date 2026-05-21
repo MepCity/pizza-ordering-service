@@ -1,0 +1,32 @@
+replicaCount: 1
+
+image:
+  repository: mepcity/pizza-ordering-service
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+
+config:
+  databaseUrl: "sqlite:///./pizza.db"
+  s3ArchiveEnabled: "false"
+  s3BucketName: "pizza-orders"
+  awsRegion: "us-east-1"
+  awsEndpointUrl: "http://localstack:4566"
+  otelEnabled: "false"
+  otelExporterEndpoint: "http://otel-collector:4317"
+
+secret:
+  awsAccessKeyId: "test"
+  awsSecretAccessKey: "test"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi

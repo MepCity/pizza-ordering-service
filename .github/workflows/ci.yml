@@ -37,6 +37,16 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: "v1.31.0"
+
+      - name: Set up kind
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: pizza-ci
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -55,12 +65,22 @@ jobs:
       - name: Build Docker image
         run: docker build -t pizza-ordering-service:${{ github.sha }} .
 
+      - name: Load image into kind
+        run: kind load docker-image pizza-ordering-service:${{ github.sha }} --name pizza-ci
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/secret.yaml
+          kubectl apply -f k8s/service.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl set image deployment/pizza-ordering-service \
+            pizza-ordering-service=pizza-ordering-service:${{ github.sha }}
+          kubectl rollout status deployment/pizza-ordering-service --timeout=120s
+
       - name: Smoke test container
         run: |
-          docker run -d --name pizza-app -p 8000:8000 \
-            -e DATABASE_URL=sqlite:///./pizza.db \
-            -e S3_ARCHIVE_ENABLED=false \
-            pizza-ordering-service:${{ github.sha }}
+          kubectl port-forward service/pizza-ordering-service 8000:80 >/tmp/pizza-port-forward.log 2>&1 &
           timeout 30 bash -c 'until curl -sf http://127.0.0.1:8000/health; do sleep 2; done'
 
       - name: Run Newman collection

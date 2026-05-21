@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     aws_access_key_id: str = "test"
     aws_secret_access_key: str = "test"
     aws_endpoint_url: str = "http://localhost:4566"
+    otel_enabled: bool = False
+    otel_service_name: str = "pizza-ordering-service"
+    otel_exporter_otlp_endpoint: str = "http://localhost:4317"
+    otel_exporter_otlp_insecure: bool = True
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

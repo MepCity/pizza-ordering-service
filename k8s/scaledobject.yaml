@@ -1,0 +1,18 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: pizza-ordering-service
+spec:
+  scaleTargetRef:
+    name: pizza-ordering-service
+  pollingInterval: 15
+  cooldownPeriod: 60
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://prometheus:9090
+        metricName: pizza_ordering_request_rate
+        threshold: "5"
+        query: sum(rate(http_requests_total[2m]))

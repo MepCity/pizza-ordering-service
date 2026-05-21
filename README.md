@@ -140,6 +140,8 @@ newman run postman/collection.json --env-var baseUrl=http://127.0.0.1:8000
 - [k8s/configmap.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/configmap.yaml)
 - [k8s/deployment.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/deployment.yaml)
 - [k8s/secret.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/secret.yaml)
+- [k8s/scaledobject.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/scaledobject.yaml)
+- [k8s/argocd-application.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/argocd-application.yaml)
 - [k8s/service.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/service.yaml)
 
 Uygulama image'i push edildikten sonra deploy:
@@ -159,6 +161,7 @@ Hazırlanan temel dosyalar:
 - [monitoring/grafana-dashboard.json](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana-dashboard.json)
 - [monitoring/grafana/provisioning/datasources/datasource.yml](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana/provisioning/datasources/datasource.yml)
 - [monitoring/grafana/provisioning/dashboards/dashboard.yml](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana/provisioning/dashboards/dashboard.yml)
+- [monitoring/otel-collector-config.yaml](/Users/yasir.arslan/Desktop/bulut/monitoring/otel-collector-config.yaml)
 
 ## Performans Testi
 
@@ -197,3 +200,10 @@ Son durum:
 - [docs/architecture.md](/Users/yasir.arslan/Desktop/bulut/docs/architecture.md)
 - [docs/final-report.md](/Users/yasir.arslan/Desktop/bulut/docs/final-report.md)
 - [docs/slides-outline.md](/Users/yasir.arslan/Desktop/bulut/docs/slides-outline.md)
+
+## Bonus Çalışmalar
+
+- Helm chart: [charts/pizza-ordering-service](/Users/yasir.arslan/Desktop/bulut/charts/pizza-ordering-service)
+- KEDA autoscaling: [k8s/scaledobject.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/scaledobject.yaml)
+- ArgoCD application: [k8s/argocd-application.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/argocd-application.yaml)
+- OpenTelemetry collector: [monitoring/otel-collector-config.yaml](/Users/yasir.arslan/Desktop/bulut/monitoring/otel-collector-config.yaml)

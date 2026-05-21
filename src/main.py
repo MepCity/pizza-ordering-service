@@ -7,6 +7,7 @@ from src.api.routes import router
 from src.db.base import Base
 from src.db.init_db import seed_menu_items
 from src.db.session import SessionLocal, engine
+from src.integrations.tracing import setup_tracing
 from src.schemas.config import get_settings
 
 settings = get_settings()
@@ -24,6 +25,7 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, version=settings.app_version, lifespan=lifespan)
+setup_tracing()
 app.include_router(router)
 Instrumentator().instrument(app).expose(app)
 

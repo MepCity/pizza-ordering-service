@@ -1,0 +1,6 @@
+apiVersion: v2
+name: pizza-ordering-service
+description: Helm chart for Pizza Ordering Service
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
