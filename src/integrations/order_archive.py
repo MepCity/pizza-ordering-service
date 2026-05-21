@@ -58,7 +58,14 @@ def bucket_exists(s3_client, bucket_name: str) -> bool:
 def ensure_bucket_exists(s3_client, bucket_name: str) -> None:
     if bucket_exists(s3_client, bucket_name):
         return
-    s3_client.create_bucket(Bucket=bucket_name)
+    settings = get_settings()
+    if settings.aws_region == "us-east-1":
+        s3_client.create_bucket(Bucket=bucket_name)
+    else:
+        s3_client.create_bucket(
+            Bucket=bucket_name,
+            CreateBucketConfiguration={"LocationConstraint": settings.aws_region},
+        )
 
 
 def archive_order_summary(order: Order) -> None:
