@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pizza-ordering-service
+  labels:
+    app: pizza-ordering-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pizza-ordering-service
+  template:
+    metadata:
+      labels:
+        app: pizza-ordering-service
+    spec:
+      containers:
+        - name: pizza-ordering-service
+          image: mepcity/pizza-ordering-service:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: pizza-ordering-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10

@@ -22,7 +22,7 @@ def postgres_test_client() -> Generator[TestClient, None, None]:
     except Exception as exc:
         pytest.skip(f"PostgreSQL test container could not be started: {exc}")
 
-    engine = create_engine(container.get_connection_url(), future=True)
+    engine = create_engine(container.get_connection_url(driver="psycopg"), future=True)
     testing_session_local = sessionmaker(bind=engine, autoflush=False, autocommit=False)
     Base.metadata.create_all(bind=engine)
 
