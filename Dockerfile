@@ -16,10 +16,10 @@ FROM python:3.11-slim AS runtime
 
 WORKDIR /app
 
-COPY --from=builder /app/dist/*.whl /tmp/app.whl
+COPY --from=builder /app/dist/ /tmp/dist/
 
-RUN pip install --no-cache-dir /tmp/app.whl \
-    && rm -f /tmp/app.whl
+RUN pip install --no-cache-dir /tmp/dist/*.whl \
+    && rm -rf /tmp/dist
 
 EXPOSE 8000
 

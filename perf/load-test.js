@@ -39,5 +39,22 @@ export default function () {
     "order status is 201": (response) => response.status === 201
   });
 
+  const orderBody = orderResponse.json();
+  const orderId = orderBody.id;
+
+  const statusResponse = http.patch(
+    `${baseUrl}/orders/${orderId}/status`,
+    JSON.stringify({ status: "preparing" }),
+    {
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  check(statusResponse, {
+    "status update is 200": (response) => response.status === 200
+  });
+
   sleep(1);
 }

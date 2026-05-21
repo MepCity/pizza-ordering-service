@@ -76,11 +76,31 @@ def home() -> str:
           <h2>Latest Response</h2>
           <pre id="order-result">No order created yet.</pre>
         </section>
+        <section>
+          <h2>List Orders</h2>
+          <button id="load-orders" type="button">Load Orders</button>
+          <pre id="orders-result">No orders loaded yet.</pre>
+        </section>
+        <section>
+          <h2>Lookup Order</h2>
+          <label>
+            Order ID
+            <input id="lookup-order-id" value="1" />
+          </label>
+          <button id="load-order-detail" type="button">Load Order Detail</button>
+          <pre id="order-detail-result">No order detail loaded yet.</pre>
+        </section>
         <script>
           const menuStatus = document.getElementById("menu-status");
           const menuSelect = document.getElementById("menu-item");
           const orderForm = document.getElementById("order-form");
           const orderResult = document.getElementById("order-result");
+          const ordersResult = document.getElementById("orders-result");
+          const orderDetailResult = document.getElementById("order-detail-result");
+          const lookupOrderId = document.getElementById("lookup-order-id");
+          const loadOrdersButton = document.getElementById("load-orders");
+          const loadOrderDetailButton = document.getElementById("load-order-detail");
+          let latestOrderId = null;
 
           async function loadMenu() {
             const response = await fetch("/menu");
@@ -118,7 +138,24 @@ def home() -> str:
               body: JSON.stringify(payload)
             });
             const body = await response.json();
+            if (response.ok) {
+              latestOrderId = body.id;
+              lookupOrderId.value = String(body.id);
+            }
             orderResult.textContent = JSON.stringify(body, null, 2);
+          });
+
+          loadOrdersButton.addEventListener("click", async () => {
+            const response = await fetch("/orders");
+            const body = await response.json();
+            ordersResult.textContent = JSON.stringify(body, null, 2);
+          });
+
+          loadOrderDetailButton.addEventListener("click", async () => {
+            const orderId = lookupOrderId.value || latestOrderId;
+            const response = await fetch(`/orders/${orderId}`);
+            const body = await response.json();
+            orderDetailResult.textContent = JSON.stringify(body, null, 2);
           });
 
           loadMenu();

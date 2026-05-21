@@ -43,6 +43,9 @@ jobs:
           pip install -e .[dev]
           npm install -g newman
 
+      - name: Install Playwright browser
+        run: python -m playwright install chromium
+
       - name: Lint
         run: ruff check .
 

@@ -1,18 +1,18 @@
 # Pizza Ordering Service
 
-FastAPI tabanli minimal pizza siparis servisi. Projenin amaci, basit bir domain uzerinden test, CI/CD, container, Kubernetes, monitoring ve performans altyapisini gostermektir.
+FastAPI tabanlı minimal pizza sipariş servisi. Projenin amacı, basit bir domain üzerinden test, CI/CD, container, Kubernetes, monitoring ve performans altyapısını göstermektir.
 
-## Ozellikler
+## Özellikler
 
-- Menu listeleme
-- Siparis olusturma
-- Siparis listeleme
-- Siparis detayi goruntuleme
-- Siparis durumu guncelleme
+- Menü listeleme
+- Sipariş oluşturma
+- Sipariş listeleme
+- Sipariş detayı görüntüleme
+- Sipariş durumu güncelleme
 - Kupon uygulama
-- Siparis ozetini S3'e arsivleme
+- Sipariş özetini S3'e arşivleme
 
-## Teknoloji Yigini
+## Teknoloji Yığını
 
 - FastAPI
 - SQLAlchemy
@@ -25,7 +25,7 @@ FastAPI tabanli minimal pizza siparis servisi. Projenin amaci, basit bir domain 
 - Prometheus ve Grafana
 - k6
 
-## API Uclari
+## API Uçları
 
 - `GET /health`
 - `GET /menu`
@@ -43,7 +43,7 @@ Gereksinimler:
 - Docker
 - Docker Compose
 
-Sanal ortam ve bagimliliklar:
+Sanal ortam ve bağımlılıklar:
 
 ```bash
 python3.10 -m venv .venv
@@ -51,27 +51,40 @@ source .venv/bin/activate
 pip install -e .[dev]
 ```
 
-Uygulamayi lokal calistirma:
+Uygulamayı lokal çalıştırma:
 
 ```bash
 uvicorn src.main:app --reload
 ```
 
-Uygulama varsayilan olarak `sqlite:///./pizza.db` ile acilir.
+Uygulama varsayılan olarak `sqlite:///./pizza.db` ile açılır.
 
 ## Docker Compose
 
-Tum servisleri ayağa kaldirma:
+Tüm servisleri ayağa kaldırma:
 
 ```bash
 docker compose up --build
 ```
 
-Bu komut su servisleri baslatir:
+Bu komut şu servisleri başlatır:
 
 - `app`
 - `postgres`
 - `localstack`
+- `prometheus`
+- `grafana`
+
+Varsayılan arayüzler:
+
+- API: `http://127.0.0.1:8000`
+- Prometheus: `http://127.0.0.1:9090`
+- Grafana: `http://127.0.0.1:3000`
+
+Grafana giriş bilgileri:
+
+- kullanıcı: `admin`
+- şifre: `admin`
 
 ## Testler
 
@@ -81,7 +94,7 @@ Unit testler:
 pytest tests/unit -q
 ```
 
-Tum testler:
+Tüm testler:
 
 ```bash
 pytest -q
@@ -95,10 +108,10 @@ pytest --cov=src --cov-report=term-missing --cov-fail-under=70
 
 Not:
 
-- `tests/integration` altindaki Testcontainers testleri Docker gerektirir.
+- `tests/integration` altındaki Testcontainers testleri Docker gerektirir.
 - Docker yoksa integration testler `skip` olur.
 
-## Ortam Degiskenleri
+## Ortam Değişkenleri
 
 - `DATABASE_URL`
 - `S3_ARCHIVE_ENABLED`
@@ -114,7 +127,7 @@ Postman koleksiyonu:
 
 - [postman/collection.json](/Users/yasir.arslan/Desktop/bulut/postman/collection.json)
 
-Newman ile kosma ornegi:
+Newman ile koşma örneği:
 
 ```bash
 newman run postman/collection.json --env-var baseUrl=http://127.0.0.1:8000
@@ -122,26 +135,30 @@ newman run postman/collection.json --env-var baseUrl=http://127.0.0.1:8000
 
 ## Kubernetes
 
-Ilk manifestler:
+İlk manifestler:
 
 - [k8s/configmap.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/configmap.yaml)
 - [k8s/deployment.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/deployment.yaml)
+- [k8s/secret.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/secret.yaml)
 - [k8s/service.yaml](/Users/yasir.arslan/Desktop/bulut/k8s/service.yaml)
 
 Uygulama image'i push edildikten sonra deploy:
 
 ```bash
 kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/secret.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 ```
 
 ## Monitoring
 
-Hazirlanan temel dosyalar:
+Hazırlanan temel dosyalar:
 
 - [monitoring/prometheus.yml](/Users/yasir.arslan/Desktop/bulut/monitoring/prometheus.yml)
 - [monitoring/grafana-dashboard.json](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana-dashboard.json)
+- [monitoring/grafana/provisioning/datasources/datasource.yml](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana/provisioning/datasources/datasource.yml)
+- [monitoring/grafana/provisioning/dashboards/dashboard.yml](/Users/yasir.arslan/Desktop/bulut/monitoring/grafana/provisioning/dashboards/dashboard.yml)
 
 ## Performans Testi
 
@@ -149,7 +166,7 @@ k6 senaryosu:
 
 - [perf/load-test.js](/Users/yasir.arslan/Desktop/bulut/perf/load-test.js)
 
-Calistirma ornegi:
+Çalıştırma örneği:
 
 ```bash
 k6 run perf/load-test.js
@@ -161,16 +178,22 @@ Tamamlananlar:
 
 - Temel API
 - Unit testler
-- PostgreSQL integration test omurgasi
-- LocalStack S3 arsivleme
+- PostgreSQL integration test omurgası
+- LocalStack S3 arşivleme
 - Dockerfile
 - Docker Compose
 - CI iskeleti
 
-Siradaki adimlar:
+Son durum:
 
-- Newman adimi
-- Kubernetes dogrulamasi
-- Monitoring dogrulamasi
-- E2E arayuz ve Playwright
-- Final rapor ve slaytlar
+- Newman adımı eklendi
+- Kubernetes manifestleri hazırlandı
+- Monitoring ve performans dosyaları hazırlandı
+- E2E omurgası eklendi
+- Final rapor, slayt ve mimari çıktı dosyaları üretildi
+
+## Dokümanlar
+
+- [docs/architecture.md](/Users/yasir.arslan/Desktop/bulut/docs/architecture.md)
+- [docs/final-report.md](/Users/yasir.arslan/Desktop/bulut/docs/final-report.md)
+- [docs/slides-outline.md](/Users/yasir.arslan/Desktop/bulut/docs/slides-outline.md)

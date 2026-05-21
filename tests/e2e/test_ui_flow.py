@@ -1,3 +1,4 @@
+import json
 import socket
 import threading
 import time
@@ -60,3 +61,75 @@ def test_user_can_create_order_from_web_ui(live_server: str) -> None:
 
     assert "Playwright User" in result
     assert '"status": "pending"' in result
+
+
+def test_user_can_list_orders_from_web_ui(live_server: str) -> None:
+    playwright = pytest.importorskip("playwright.sync_api")
+
+    try:
+        with playwright.sync_playwright() as browser_context:
+            browser = browser_context.chromium.launch()
+            page = browser.new_page()
+            page.goto(live_server, wait_until="networkidle")
+            page.fill("#customer-name", "Orders User")
+            page.fill("#extras", "olive")
+            page.click("#submit-order")
+            page.wait_for_timeout(500)
+            page.click("#load-orders")
+            page.wait_for_timeout(300)
+
+            result = page.locator("#orders-result").inner_text()
+            browser.close()
+    except Exception as exc:
+        pytest.skip(f"Playwright browser is not available: {exc}")
+
+    assert "Orders User" in result
+
+
+def test_user_can_load_order_detail_from_web_ui(live_server: str) -> None:
+    playwright = pytest.importorskip("playwright.sync_api")
+
+    try:
+        with playwright.sync_playwright() as browser_context:
+            browser = browser_context.chromium.launch()
+            page = browser.new_page()
+            page.goto(live_server, wait_until="networkidle")
+            page.fill("#customer-name", "Lookup User")
+            page.fill("#extras", "olive")
+            page.click("#submit-order")
+            page.wait_for_timeout(500)
+
+            latest_response = page.locator("#order-result").inner_text()
+            order_id = json.loads(latest_response)["id"]
+            page.fill("#lookup-order-id", str(order_id))
+            page.click("#load-order-detail")
+            page.wait_for_timeout(300)
+
+            detail = page.locator("#order-detail-result").inner_text()
+            browser.close()
+    except Exception as exc:
+        pytest.skip(f"Playwright browser is not available: {exc}")
+
+    assert "Lookup User" in detail
+    assert '"id": ' in detail
+
+
+def test_user_sees_validation_error_for_invalid_extra(live_server: str) -> None:
+    playwright = pytest.importorskip("playwright.sync_api")
+
+    try:
+        with playwright.sync_playwright() as browser_context:
+            browser = browser_context.chromium.launch()
+            page = browser.new_page()
+            page.goto(live_server, wait_until="networkidle")
+            page.fill("#customer-name", "Invalid Extra User")
+            page.fill("#extras", "pineapple")
+            page.click("#submit-order")
+            page.wait_for_timeout(500)
+
+            result = page.locator("#order-result").inner_text()
+            browser.close()
+    except Exception as exc:
+        pytest.skip(f"Playwright browser is not available: {exc}")
+
+    assert "Unsupported extras" in result

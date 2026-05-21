@@ -23,6 +23,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: pizza-ordering-config
+            - secretRef:
+                name: pizza-ordering-secret
           readinessProbe:
             httpGet:
               path: /health
@@ -35,3 +37,10 @@ spec:
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"
