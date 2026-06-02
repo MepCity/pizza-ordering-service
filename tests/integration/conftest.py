@@ -14,6 +14,7 @@ from src.main import app
 from src.schemas.config import get_settings
 
 
+# Gerçek PostgreSQL container'ı başlatır — Docker gerektirir, yoksa test skip edilir
 @pytest.fixture
 def postgres_test_client() -> Generator[TestClient, None, None]:
     try:
@@ -50,6 +51,7 @@ def postgres_test_client() -> Generator[TestClient, None, None]:
     container.stop()
 
 
+# Gerçek LocalStack S3 container'ı başlatır — S3 entegrasyon testleri için
 @pytest.fixture
 def localstack_s3() -> Generator[LocalStackContainer, None, None]:
     settings = get_settings()

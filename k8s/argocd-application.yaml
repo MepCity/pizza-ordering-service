@@ -1,3 +1,5 @@
+# ArgoCD Application: GitOps ile otomatik deploy (bonus)
+# GitHub'daki main branch değişince ArgoCD otomatik K8s'e deploy eder
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -7,12 +9,12 @@ spec:
   project: default
   source:
     repoURL: https://github.com/MepCity/pizza-ordering-service.git
-    targetRevision: main
-    path: charts/pizza-ordering-service
+    targetRevision: main          # main branch'i takip et
+    path: charts/pizza-ordering-service  # Helm chart burada
   destination:
     server: https://kubernetes.default.svc
     namespace: default
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true      # Git'te silinenleri K8s'den de sil
+      selfHeal: true   # K8s'de manuel değişiklik olursa Git'e geri döndür

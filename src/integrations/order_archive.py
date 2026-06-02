@@ -8,10 +8,12 @@ from src.models import Order, OrderItem
 from src.schemas.config import get_settings
 
 
+# Decimal tipini JSON'a yazılabilir string'e çevirir (örn: Decimal("14.49") → "14.49")
 def decimal_to_string(value: Decimal) -> str:
     return format(value.quantize(Decimal("0.01")), "f")
 
 
+# Sipariş kalemini JSON'a yazılabilir dict'e dönüştürür
 def serialize_order_item(item: OrderItem) -> dict[str, object]:
     return {
         "menu_item_id": item.menu_item_id,
@@ -22,6 +24,7 @@ def serialize_order_item(item: OrderItem) -> dict[str, object]:
     }
 
 
+# Siparişin tamamını S3'e yazılacak JSON formatına dönüştürür
 def build_order_summary(order: Order) -> dict[str, object]:
     return {
         "order_id": order.id,
@@ -36,6 +39,7 @@ def build_order_summary(order: Order) -> dict[str, object]:
     }
 
 
+# LocalStack S3 istemcisi oluşturur — endpoint_url ile gerçek AWS yerine LocalStack'e bağlanır
 def create_s3_client():
     settings = get_settings()
     return boto3.client(
@@ -47,6 +51,7 @@ def create_s3_client():
     )
 
 
+# Bucket var mı kontrol eder
 def bucket_exists(s3_client, bucket_name: str) -> bool:
     try:
         s3_client.head_bucket(Bucket=bucket_name)
@@ -55,6 +60,7 @@ def bucket_exists(s3_client, bucket_name: str) -> bool:
         return False
 
 
+# Bucket yoksa oluşturur (us-east-1 için LocationConstraint gerekmez)
 def ensure_bucket_exists(s3_client, bucket_name: str) -> None:
     if bucket_exists(s3_client, bucket_name):
         return
@@ -68,6 +74,7 @@ def ensure_bucket_exists(s3_client, bucket_name: str) -> None:
         )
 
 
+# Siparişi JSON olarak S3'e yükler: orders/{id}.json şeklinde kaydeder
 def archive_order_summary(order: Order) -> None:
     settings = get_settings()
     s3_client = create_s3_client()

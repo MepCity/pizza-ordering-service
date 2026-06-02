@@ -10,12 +10,15 @@ import uvicorn
 from src.main import app
 
 
+# Boş port bulur — her testte çakışma olmasın diye rastgele port seçilir
 def get_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.bind(("127.0.0.1", 0))
         return int(sock.getsockname()[1])
 
 
+# E2E testler için gerçek bir uvicorn sunucusu ayrı thread'de başlatır
+# Playwright bu sunucuya gerçek browser ile bağlanır
 @pytest.fixture
 def live_server() -> Generator[str, None, None]:
     try:
@@ -28,6 +31,7 @@ def live_server() -> Generator[str, None, None]:
     thread = threading.Thread(target=server.run, daemon=True)
     thread.start()
 
+    # Sunucu hazır olana kadar bekle (max 10 saniye)
     timeout = time.time() + 10
     while not server.started and time.time() < timeout:
         time.sleep(0.1)
@@ -41,6 +45,7 @@ def live_server() -> Generator[str, None, None]:
     thread.join(timeout=5)
 
 
+# Playwright ile tarayıcı açar, formu doldurur, sipariş oluşturur
 def test_user_can_create_order_from_web_ui(live_server: str) -> None:
     playwright = pytest.importorskip("playwright.sync_api")
 
@@ -63,6 +68,7 @@ def test_user_can_create_order_from_web_ui(live_server: str) -> None:
     assert '"status": "pending"' in result
 
 
+# "Load Orders" butonuna tıklayınca sipariş listesi gelmeli
 def test_user_can_list_orders_from_web_ui(live_server: str) -> None:
     playwright = pytest.importorskip("playwright.sync_api")
 
@@ -86,6 +92,7 @@ def test_user_can_list_orders_from_web_ui(live_server: str) -> None:
     assert "Orders User" in result
 
 
+# Sipariş oluştur, ID'sini al, detayına bak — doğru veri geliyor mu?
 def test_user_can_load_order_detail_from_web_ui(live_server: str) -> None:
     playwright = pytest.importorskip("playwright.sync_api")
 
@@ -114,6 +121,7 @@ def test_user_can_load_order_detail_from_web_ui(live_server: str) -> None:
     assert '"id": ' in detail
 
 
+# "pineapple" yazınca hata mesajı sayfada görünmeli
 def test_user_sees_validation_error_for_invalid_extra(live_server: str) -> None:
     playwright = pytest.importorskip("playwright.sync_api")
 

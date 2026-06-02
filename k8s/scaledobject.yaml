@@ -1,18 +1,20 @@
+# KEDA ScaledObject: Prometheus metriğine göre otomatik ölçekleme (bonus)
+# Saniyede 5'ten fazla istek gelirse yeni pod açılır, azalınca kapanır
 apiVersion: keda.sh/v1alpha1
 kind: ScaledObject
 metadata:
   name: pizza-ordering-service
 spec:
   scaleTargetRef:
-    name: pizza-ordering-service
-  pollingInterval: 15
-  cooldownPeriod: 60
-  minReplicaCount: 1
-  maxReplicaCount: 5
+    name: pizza-ordering-service  # hangi Deployment'ı ölçekleyeceğiz
+  pollingInterval: 15   # her 15 saniyede metriği kontrol et
+  cooldownPeriod: 60    # yük düşünce 60 saniye bekle, sonra küçült
+  minReplicaCount: 1    # en az 1 pod çalışsın
+  maxReplicaCount: 5    # en fazla 5 pod açılsın
   triggers:
     - type: prometheus
       metadata:
         serverAddress: http://prometheus:9090
         metricName: pizza_ordering_request_rate
-        threshold: "5"
+        threshold: "5"   # saniyede 5 istek aşılınca scale up
         query: sum(rate(http_requests_total[2m]))

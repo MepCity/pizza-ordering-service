@@ -1,12 +1,15 @@
+# Service: dışarıdan (veya cluster içinden) uygulamaya erişim noktası
+# ClusterIP = sadece cluster içinden erişilebilir, dışarı açmaz
+# port 80'e gelen trafik container'ın 8000 portuna iletilir
 apiVersion: v1
 kind: Service
 metadata:
   name: pizza-ordering-service
 spec:
   selector:
-    app: pizza-ordering-service
+    app: pizza-ordering-service  # bu label'a sahip pod'lara yönlendir
   ports:
     - protocol: TCP
-      port: 80
-      targetPort: 8000
+      port: 80          # service'in portu (cluster içi)
+      targetPort: 8000  # container'ın portu
   type: ClusterIP

@@ -3,6 +3,7 @@ import json
 from fastapi.testclient import TestClient
 
 
+# Sipariş gerçek PostgreSQL'e yazılıyor mu? Fiyat hesabı doğru mu?
 def test_create_order_persists_to_postgres(postgres_test_client: TestClient) -> None:
     response = postgres_test_client.post(
         "/orders",
@@ -28,6 +29,7 @@ def test_create_order_persists_to_postgres(postgres_test_client: TestClient) -> 
     assert body["total_price"] == "27.98"
 
 
+# Kupon uygulandıktan sonra DB'deki total_price güncellenmiş mi?
 def test_apply_coupon_updates_persisted_totals(postgres_test_client: TestClient) -> None:
     create_response = postgres_test_client.post(
         "/orders",
@@ -57,6 +59,7 @@ def test_apply_coupon_updates_persisted_totals(postgres_test_client: TestClient)
     assert fetch_body["total_price"] == "13.04"
 
 
+# Sipariş sonrası LocalStack S3'te orders/{id}.json oluşuyor mu?
 def test_create_order_archives_summary_to_localstack_s3(
     postgres_test_client: TestClient, localstack_s3
 ) -> None:

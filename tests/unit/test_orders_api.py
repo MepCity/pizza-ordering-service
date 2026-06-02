@@ -4,6 +4,7 @@ from src.schemas.config import get_settings
 from src.services import orders as order_service
 
 
+# Menü endpoint'i seed edilen 6 pizzayı döndürmeli
 def test_get_menu_returns_seeded_items(test_client: TestClient) -> None:
     response = test_client.get("/menu")
 
@@ -13,6 +14,7 @@ def test_get_menu_returns_seeded_items(test_client: TestClient) -> None:
     assert payload[0]["name"] == "Margherita"
 
 
+# Sipariş oluşturma — 201 dönmeli, müşteri adı ve kalemler doğru olmalı
 def test_create_order_returns_created_order(test_client: TestClient) -> None:
     payload = {
         "customer_name": "Yasir",
@@ -35,6 +37,7 @@ def test_create_order_returns_created_order(test_client: TestClient) -> None:
     assert body["items"][0]["extras"] == ["jalapeno", "mushroom"]
 
 
+# "pineapple" gibi desteklenmeyen extra girilince 422 hatası dönmeli
 def test_create_order_rejects_unsupported_extra(test_client: TestClient) -> None:
     response = test_client.post(
         "/orders",
@@ -54,6 +57,7 @@ def test_create_order_rejects_unsupported_extra(test_client: TestClient) -> None
     assert "Unsupported extras" in response.text
 
 
+# Aynı siparişe iki kez kupon uygulanınca ikincisi 400 hatası vermeli
 def test_apply_coupon_cannot_be_used_twice(test_client: TestClient) -> None:
     create_response = test_client.post(
         "/orders",
@@ -78,6 +82,7 @@ def test_apply_coupon_cannot_be_used_twice(test_client: TestClient) -> None:
     assert second_response.json()["detail"] == "A coupon has already been applied to this order"
 
 
+# Geçersiz kupon kodu girilince 400 ve "Invalid coupon code" mesajı dönmeli
 def test_apply_coupon_rejects_unknown_code(test_client: TestClient) -> None:
     create_response = test_client.post(
         "/orders",
@@ -97,6 +102,7 @@ def test_apply_coupon_rejects_unknown_code(test_client: TestClient) -> None:
     assert response.json()["detail"] == "Invalid coupon code"
 
 
+# pending → delivered atlaması geçersiz, 400 dönmeli
 def test_invalid_status_transition_returns_bad_request(test_client: TestClient) -> None:
     create_response = test_client.post(
         "/orders",
@@ -116,6 +122,7 @@ def test_invalid_status_transition_returns_bad_request(test_client: TestClient) 
     assert "Invalid status transition" in response.json()["detail"]
 
 
+# pending → preparing → ready → delivered sırasıyla ilerleyebilmeli
 def test_order_status_can_progress_sequentially(test_client: TestClient) -> None:
     create_response = test_client.post(
         "/orders",
@@ -147,6 +154,8 @@ def test_order_status_can_progress_sequentially(test_client: TestClient) -> None
     assert delivered_response.json()["status"] == "delivered"
 
 
+# S3 arşivleme açıkken sipariş oluşturulunca archive fonksiyonu çağrılmalı
+# monkeypatch ile gerçek S3 yerine sahte fonksiyon kullanılır
 def test_create_order_archives_to_s3_when_enabled(
     monkeypatch, test_client: TestClient
 ) -> None:

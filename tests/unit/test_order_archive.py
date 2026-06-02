@@ -4,6 +4,8 @@ from src.integrations.order_archive import build_order_summary
 from tests.factories import OrderFactory, OrderItemFactory
 
 
+# S3'e yazılacak JSON özetinin doğru üretildiğini test eder
+# Factory Boy ile sahte sipariş objesi oluşturur — DB'ye dokunmaz
 def test_build_order_summary_serializes_order_fields() -> None:
     order = OrderFactory(
         id=42,

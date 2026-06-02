@@ -9,14 +9,16 @@ from src.schemas.config import get_settings
 from src.schemas.order import CouponApplyRequest, OrderCreateRequest, OrderStatus
 from src.services.pricing import calculate_discount, calculate_line_total
 
+# Sipariş durumu sadece bu sırayla ilerleyebilir, geri dönemez
 VALID_STATUS_TRANSITIONS = {
     "pending": {"preparing"},
     "preparing": {"ready"},
     "ready": {"delivered"},
-    "delivered": set(),
+    "delivered": set(),  # son durum, buradan hiçbir yere geçilemez
 }
 
 
+# S3 arşivleme açıksa siparişi LocalStack S3'e gönderir
 def archive_order_if_enabled(order: Order) -> None:
     settings = get_settings()
     if not settings.s3_archive_enabled:
@@ -24,10 +26,12 @@ def archive_order_if_enabled(order: Order) -> None:
     archive_order_summary(order)
 
 
+# GET /menu → veritabanından aktif menü öğelerini çeker
 def list_menu_items(db: Session) -> list[MenuItem]:
     return db.query(MenuItem).filter(MenuItem.is_available.is_(True)).order_by(MenuItem.id).all()
 
 
+# GET /orders → tüm siparişleri yeniden eskiye sıralar
 def list_orders(db: Session) -> list[Order]:
     return (
         db.query(Order)
@@ -37,6 +41,7 @@ def list_orders(db: Session) -> list[Order]:
     )
 
 
+# GET /orders/{id} → tek sipariş getirir, bulunamazsa 404 döner
 def get_order_by_id(db: Session, order_id: int) -> Order:
     order = (
         db.query(Order)
@@ -49,6 +54,7 @@ def get_order_by_id(db: Session, order_id: int) -> Order:
     return order
 
 
+# POST /orders → yeni sipariş oluşturur: fiyat hesapla → DB'ye kaydet → S3'e arşivle
 def create_order(db: Session, payload: OrderCreateRequest) -> Order:
     menu_item_ids = [item.menu_item_id for item in payload.items]
     menu_items = (
@@ -98,6 +104,7 @@ def create_order(db: Session, payload: OrderCreateRequest) -> Order:
     return persisted_order
 
 
+# PATCH /orders/{id}/status → durum geçişini kontrol eder, geçersizse 400 döner
 def update_order_status(db: Session, order_id: int, new_status: OrderStatus | str) -> Order:
     order = get_order_by_id(db, order_id)
     normalized_status = (
@@ -117,6 +124,7 @@ def update_order_status(db: Session, order_id: int, new_status: OrderStatus | st
     return get_order_by_id(db, order.id)
 
 
+# POST /orders/{id}/apply-coupon → kuponu uygular, zaten varsa hata verir
 def apply_coupon(db: Session, order_id: int, payload: CouponApplyRequest) -> Order:
     order = get_order_by_id(db, order_id)
 

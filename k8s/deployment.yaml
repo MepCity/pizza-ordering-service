@@ -1,3 +1,4 @@
+# Deployment: uygulamanın kaç kopya (replica) çalışacağını ve nasıl çalışacağını tanımlar
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +6,7 @@ metadata:
   labels:
     app: pizza-ordering-service
 spec:
-  replicas: 1
+  replicas: 1  # başlangıçta 1 kopya — KEDA yük artınca otomatik artırır
   selector:
     matchLabels:
       app: pizza-ordering-service
@@ -17,30 +18,30 @@ spec:
       containers:
         - name: pizza-ordering-service
           image: mepcity/pizza-ordering-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: IfNotPresent  # lokalde varsa tekrar indirme
           ports:
             - containerPort: 8000
           envFrom:
             - configMapRef:
-                name: pizza-ordering-config
+                name: pizza-ordering-config  # hassas olmayan env değişkenleri
             - secretRef:
-                name: pizza-ordering-secret
+                name: pizza-ordering-secret  # AWS key gibi hassas değişkenler
           readinessProbe:
             httpGet:
-              path: /health
+              path: /health  # hazır değilse trafik gönderme
               port: 8000
             initialDelaySeconds: 5
             periodSeconds: 5
           livenessProbe:
             httpGet:
-              path: /health
+              path: /health  # cevap vermezse container'ı yeniden başlat
               port: 8000
             initialDelaySeconds: 10
             periodSeconds: 10
           resources:
             requests:
-              cpu: "100m"
+              cpu: "100m"     # başlangıçta ayrılan: 0.1 CPU, 128MB RAM
               memory: "128Mi"
             limits:
-              cpu: "500m"
+              cpu: "500m"     # maksimum: 0.5 CPU, 256MB RAM
               memory: "256Mi"

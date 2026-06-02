@@ -9,11 +9,15 @@ from src.models import MenuItem, Order, OrderItem
 fake = Faker()
 
 
+# Gerçekçi test verisi üretmek için Factory Boy kullanılıyor
+# Her çağrıda farklı ama geçerli veriler üretir — Faker ile rastgele isim/fiyat
+
+# Menü öğesi fabrikası — DB'ye yazmaz, sadece Python objesi üretir
 class MenuItemFactory(factory.Factory):
     class Meta:
         model = MenuItem
 
-    id = factory.Sequence(lambda n: n + 1)
+    id = factory.Sequence(lambda n: n + 1)        # 1, 2, 3... otomatik artar
     name = factory.Iterator(["Margherita", "Pepperoni", "Vegetarian"])
     size = factory.Iterator(["small", "medium", "large"])
     base_price = factory.LazyFunction(
@@ -24,6 +28,7 @@ class MenuItemFactory(factory.Factory):
     is_available = True
 
 
+# Sipariş kalemi fabrikası
 class OrderItemFactory(factory.Factory):
     class Meta:
         model = OrderItem
@@ -36,12 +41,13 @@ class OrderItemFactory(factory.Factory):
     line_total = Decimal("11.49")
 
 
+# Sipariş fabrikası — customer_name Faker ile rastgele üretilir
 class OrderFactory(factory.Factory):
     class Meta:
         model = Order
 
     id = factory.Sequence(lambda n: n + 1)
-    customer_name = factory.Faker("name")
+    customer_name = factory.Faker("name")         # örn: "John Smith"
     status = "pending"
     subtotal = Decimal("11.49")
     discount_amount = Decimal("0.00")

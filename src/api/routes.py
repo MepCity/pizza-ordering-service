@@ -23,6 +23,7 @@ from src.services.orders import (
 router = APIRouter()
 
 
+# Ana sayfa → tarayıcıda localhost:8000 açıldığında gelen HTML+JS arayüzü
 @router.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home() -> str:
     return """
@@ -165,11 +166,13 @@ def home() -> str:
     """
 
 
+# GET /menu → aktif menü öğelerini listeler
 @router.get("/menu", response_model=list[MenuItemResponse])
 def get_menu(db: Session = Depends(get_db)) -> list[MenuItemResponse]:
     return list_menu_items(db)
 
 
+# POST /orders → yeni sipariş oluşturur, başarılıysa 201 döner
 @router.post("/orders", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_new_order(
     payload: OrderCreateRequest, db: Session = Depends(get_db)
@@ -177,16 +180,19 @@ def create_new_order(
     return create_order(db, payload)
 
 
+# GET /orders → tüm siparişleri listeler
 @router.get("/orders", response_model=list[OrderSummaryResponse])
 def get_orders(db: Session = Depends(get_db)) -> list[OrderSummaryResponse]:
     return list_orders(db)
 
 
+# GET /orders/{id} → tek bir siparişin detayını getirir, yoksa 404
 @router.get("/orders/{order_id}", response_model=OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)) -> OrderResponse:
     return get_order_by_id(db, order_id)
 
 
+# PATCH /orders/{id}/status → sipariş durumunu günceller (pending→preparing→ready→delivered)
 @router.patch("/orders/{order_id}/status", response_model=OrderResponse)
 def patch_order_status(
     order_id: int, payload: OrderStatusUpdateRequest, db: Session = Depends(get_db)
@@ -194,6 +200,7 @@ def patch_order_status(
     return update_order_status(db, order_id, payload.status)
 
 
+# POST /orders/{id}/apply-coupon → kuponu siparişe uygular, zaten varsa hata verir
 @router.post("/orders/{order_id}/apply-coupon", response_model=OrderResponse)
 def apply_order_coupon(
     order_id: int, payload: CouponApplyRequest, db: Session = Depends(get_db)

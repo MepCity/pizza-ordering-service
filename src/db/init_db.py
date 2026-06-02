@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 
 from src.models import MenuItem
 
+# Uygulama ilk açıldığında veritabanına yazılacak varsayılan menü
 DEFAULT_MENU_ITEMS = [
     {"name": "Margherita", "size": "small", "base_price": 8.99},
     {"name": "Margherita", "size": "medium", "base_price": 11.99},
@@ -12,6 +13,7 @@ DEFAULT_MENU_ITEMS = [
 ]
 
 
+# Menü tablosu boşsa varsayılan pizzaları ekler, dolu ise dokunmaz
 def seed_menu_items(db: Session) -> None:
     if db.query(MenuItem).count() > 0:
         return

@@ -1,9 +1,11 @@
 from src.db.session import engine
 from src.schemas.config import get_settings
 
+# İki kez çağrılmasın diye bayrak tutuyoruz
 _TRACING_CONFIGURED = False
 
 
+# OpenTelemetry tracing'i kurar — OTEL_ENABLED=true ise Jaeger'a trace gönderir
 def setup_tracing() -> None:
     global _TRACING_CONFIGURED
 
@@ -35,6 +37,7 @@ def setup_tracing() -> None:
     tracer_provider.add_span_processor(BatchSpanProcessor(otlp_exporter))
     trace.set_tracer_provider(tracer_provider)
 
+    # FastAPI isteklerini, SQL sorgularını ve AWS çağrılarını otomatik izler
     FastAPIInstrumentor().instrument()
     SQLAlchemyInstrumentor().instrument(engine=engine)
     BotocoreInstrumentor().instrument()

@@ -10,8 +10,11 @@ from src.db.session import get_db
 from src.main import app
 
 
+# Unit testlerde kullanılan fixture — gerçek DB yerine bellekte SQLite kullanır
+# Her test izole başlar, biter, veritabanı sıfırlanır
 @pytest.fixture
 def test_client() -> TestClient:
+    # Bellekte geçici SQLite DB oluştur (dosyaya yazmaz)
     engine = create_engine(
         "sqlite://",
         connect_args={"check_same_thread": False},
@@ -26,6 +29,7 @@ def test_client() -> TestClient:
     finally:
         db.close()
 
+    # Uygulamanın DB bağlantısını test DB'siyle değiştir
     def override_get_db():
         db = testing_session_local()
         try:
@@ -38,5 +42,6 @@ def test_client() -> TestClient:
     with TestClient(app) as client:
         yield client
 
+    # Test bitti: override'ı temizle, tabloları sil
     app.dependency_overrides.clear()
     Base.metadata.drop_all(bind=engine)

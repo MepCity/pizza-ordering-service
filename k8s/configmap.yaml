@@ -1,10 +1,12 @@
+# ConfigMap: hassas OLMAYAN ortam değişkenleri burada tutulur
+# Deployment bu değerleri envFrom ile okur
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pizza-ordering-config
 data:
-  DATABASE_URL: "sqlite:///./pizza.db"
+  DATABASE_URL: "sqlite:///./pizza.db"   # K8s'de SQLite kullanıyoruz (prod'da PostgreSQL olur)
   S3_ARCHIVE_ENABLED: "false"
   S3_BUCKET_NAME: "pizza-orders"
   AWS_REGION: "us-east-1"
-  AWS_ENDPOINT_URL: "http://localstack:4566"
+  AWS_ENDPOINT_URL: "http://localstack:4566"  # LocalStack servisi
